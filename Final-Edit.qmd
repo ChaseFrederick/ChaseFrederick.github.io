@@ -1,0 +1,1079 @@
+---
+title: 'Political Economy & Data Analysis: Capstone Paper!'
+jupyter: python3
+format:
+  html:
+    code-fold: true  # Enable code folding for HTML
+  pdf:
+    keep-tex: true   # Keep LaTeX files for PDF
+execute:
+  echo: false       # Do not show code cells in output
+---
+
+
+#### **Introduction & Synopsis**
+
+*How did the implementation of the U.S. 1994 Violent Crime Control & Law Enforcement Act impact crime rates in the United States, and to what extent were these impacts statistically significant and substantively meaningful?*
+
+In this study, my investigation centers on dissecting a two-part question: First, *did the U.S. 1994 Violent Crime Control & Law Enforcement Act lead to a statistically significant change in crime rates?* Second, *If such a change is observed, to what extent is it substantively meaningful within the broader societal and economic landscape?* To address these inquiries, I utilize a comprehensive dataset spanning from 1986 to 2002. This dataset was meticulously assembled through the APIs of the FBI's Crime Data Explorer (CDE), the Bureau of Economic Analysis, and the U.S. Federal Reserve Bank (FRED).
+
+Employing advanced analytical methods, namely Difference-in-Differences analysis and Synthetic Control Estimation, my findings reveal a significant and pronounced impact of the 1994 Violent Crime Control and Law Enforcement Act on overall crime rates, particularly on violent crime. Specifically, the analysis indicates that, post-1994 VCCA ratification and implementation, states with high crime rates experienced an average reduction of 114.69 in violent crime rates. Similarly, these states also saw an average decrease of 327.46 in property crime rates. While these results were generally robust, it's noteworthy that the property crime rate estimation underwent a notable shift in its significance and statistical support when the time frame of the analysis was adjusted.
+
+## **Liturature Review & Historical Context**
+
+The **Violent Crime Control & Law Enforcement Act** of 1994 (VCCA), often known as the 1994 Crime Bill, is a pivotal piece of U.S. legislation, renowned for its comprehensive scope and significant funding. Signed by President Bill Clinton, this extensive crime bill introduced several key measures to enhance public safety and reduce crime. 
+
+It initiated a 10-year federal ban on the manufacturing, sale, and possession of new semi-automatic assault weapons. The bill also established a federal "three strikes" rule, imposing life sentences for those convicted of a violent felony after two or more prior convictions, including drug offenses. Notably, it provided $8.8 billion for adding 100,000 new police officers, promoting community policing through the Community Oriented Policing Services (COPS) program, and created the COPS Grant program to support police hiring and equipment upgrades in applicant police and sheriff departments.
+
+Furthermore, the 1994 Violent Crime Control & Law Enforcement Act (VCCA) expanded the federal death penalty to include about 60 additional crimes, and incorporated the Violence Against Women Act, allocating $1.6 billion towards the investigation and prosecution of violent crimes against women. It provided funding for drug courts for alternative sentencing of drug offenders, and allocated $9.7 billion for federal prisons. The bill also supported various crime prevention programs, especially targeting youth.
+
+In addition to these measures, the bill included the Brady Handgun Violence Prevention Act, which implemented federal background checks on firearm purchasers in the United States, established a framework for a national sex offender registry, and streamlined deportation proceedings for non-citizens convicted of crimes.
+
+Concerning the topic abating crime, while there has been a bevy of liturature produced in the last two decades substatiating the effects of the police on crime [McCrary (2002)](https://www.aeaweb.org/articles?id=10.1257/00028280260344768), [Mello (2019)](https://www.sciencedirect.com/science/article/abs/pii/S0047272718302305), [MacDonald 2016](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0157223)  - particularly, the effect of police presence on crime -  some recent studies have investigated the effect that punishment and severity type has on crime. [Durlauf and Nagin (2011)](https://www.nber.org/system/files/chapters/c12078/c12078.pdf) argues that severity-based sanctions, such as lengthy prison terms, have a modest marginal deterrent effect on crime. They suggest that a shift towards certainty-based sanctions, like effective and visible policing, could reduce both crime and imprisonment rates without increasing the overall resource commitment to the criminal justice system. 
+
+Other studies have examined the factors influencing crime rates. [Grogger et al. (1998)](https://www.jstor.org/stable/10.1086/209905) focused on time allocation and wages, suggesting that crime rises when potential earnings from legal work decline. [Gould et al. (2002)](https://inequality.stanford.edu/sites/default/files/media/_media/pdf/Reference%20Media/Gould,%20Weinberg,%20and%20Mustard_2002_Crime%20and%20the%20Legal%20System.pdf) found further evidence that poor labor market conditions, particularly for young men, is associated with an increased criminality. A working paper by [Chalfin et al. (2020)](https://www.nber.org/system/files/working_papers/w28202/w28202.pdf) provided further empirical evidence that additional policing can directly reduce homicides [(Chalfin & Mccrary, 2017)](https://direct.mit.edu/rest/article-abstract/100/1/167/58429/Are-U-S-Cities-Underpoliced-Theory-and-Evidence?redirectedFrom=fulltext). This body of research, along with the insights from Durlauf and Nagin (2011) and [Weisburst (Latest Paper)](https://www.nber.org/system/files/working_papers/w28202/w28202.pdf), highlights the complex variables at play, including labor markets and law enforcement strength, in understanding current crime trends.
+
+### **Methodology and Research Goals**
+ I will be leveraging both\, **Difference-in-Difference** and **Synthetic Controls** model design. These estimation techniques, used in conjunction with data from the U.S Federal Bureau of Investigation (FBI), Bureau of Economic Analysis (BEA), Federal Reserve Bank (FRED), will be used to tease out what effect the 1994 Violent Crime Control & Law Enforcement Act (VCCA) may have had on surging crime in the United States. The initial position of the paper is that the 1994 Violent Crime Control & Law Enforcement Act (VCCA) had analytically verifiable effects on crime but was ultimately unimpactful in the overarching crime trends in the United States (Lee & Mccrary, 2005; Hjalmarsson, 2009).
+
+
+## Empirical Framework and Data Sources
+
+### **Data Source(s)**
+
+The data utilized in this study were derived from two primary government sources. The Bureau of Economic Analysis (BEA) provided key economic indicators, while crime statistics were obtained from the Department of Justice and FBI's National Incident-Based Reporting System (NIBRS).
+
+From the BEA, the variable "employment" reflects the total number of jobs in a state, aggregated in units of ten thousand. Additionally, the state's Gross Domestic Product (GDP) and population figures were acquired, with GDP figures scaled to tens of millions and population estimates to the nearest ten thousand.
+
+The NIBRS contributed detailed crime statistics, focusing on the period from 1985 to 2010. Specifically, this study incorporated the violent crime rate and property crime rate, both standardized per 100,000 inhabitants to facilitate comparison.
+
+### Variable Definitions:
+
+**GDP:**
+
+This represents the BEA's estimate of the total market value of goods and services produced within a state in a given fiscal year.
+
+**Population:**
+
+An estimation by the BEA, accounting for the base population of the previous year, adjusted for births, deaths, and net migration.
+
+**Employment (emp):**
+
+An estimate of total employment figures by the BEA, based on the North American Industry Classification System (NAICS), collected at the level of hundreds of thousands.
+
+**Post-1994 Indicator:**
+
+A dichotomous variable created to categorize the temporal data into two groups: before and after the enactment of the Violent Crime Control and Law Enforcement Act (VCCA) of 1994. This binary indicator serves to assess the impact of the VCCA on crime rates and economic factors.
+
+**High Crime Indicator:** For our analysis operationalizes the designation of "High Crime" states through a quantitative metric that encompasses states with violent crime rates exceeding one standard deviation above the national average. This statistical threshold was chosen based on the calculated national mean and standard deviation for violent crime, thereby identifying states with disproportionately high crime rates. Such a criterion is deliberate in isolating significant outliers, ensuring that the classification reflects a marked departure from the typical crime levels. This methodological choice underscores states where violent crime rates are not merely above average, but are also statistically aberrant, thereby meriting particular attention in policy planning and resource allocation. States where this indicator is equal to one are as follows: California, Illinois, Louisiana, Massachusetts, Maryland, Michigan, New Mexico, New York
+
+**High Crime Property Indicator:** For our analysis operationalizes the designation of "High Crime" states through a quantitative metric that encompasses states with property crime rates exceeding one standard deviation above the national average. This statistical threshold was chosen based on the calculated national mean and standard deviation for violent crime, thereby identifying states with disproportionately high property crime rates. Such a criterion is deliberate in isolating significant outliers, ensuring that the classification reflects a marked departure from the typical crime levels. This methodological choice underscores states where property crime rates are not merely above average, but are also statistically aberrant, thereby meriting particular attention in policy planning and resource allocation. States where this indicator is equal to 1 are as follows : Arizona, California, Colorado, Hawaii, Louisiana, Michigan, New Mexico, Nevada, New York, Oregon, Texas, Utah, Washington. 
+
+**Post-High Crime Statstic (PostHC_static):** The variable "Post-High Crime Static" (PostHC_static) is designed to function within the Difference-in-Differences (DiD) estimation framework of this model. It identifies whether a data point pertains to a period after the implementation of the Violent Crime Control and Law Enforcement Act (VCCA) of 1994 within states classified as high-crime. This binary variable is crucial for assessing the differential impact of the VCCA's enactment on states with elevated crime rates, relative to their counterparts.
+
+**Violent Crime Rate:**
+
+Estimated rate of violent crimes reported to the FBI for a given state and year. Includes within it are counts of: 
+
+1) **Criminal homicide** : Murder and nonnegligent manslaughter: the willful (nonnegligent) killing of one human being by another. Deaths caused by negligence, attempts to kill, assaults to kill, suicides, and accidental deaths are excluded. The program classifies justifiable homicides separately and limits the definition to: (1) the killing of a felon by a law enforcement officer in the line of duty; or (2) the killing of a felon, during the commission of a felony, by a private citizen. b.) Manslaughter by negligence: the killing of another person through gross negligence. Deaths of persons due to their own negligence, accidental deaths not resulting from gross negligence, and traffic fatalities are not included in the category manslaughter by negligence.
+
+2) **Robbery** : The taking or attempting to take anything of value from the care, custody, or control of a person or persons by force or threat of force or violence and/or by putting the victim in fear.
+
+3) **Aggravated assault** : An unlawful attack by one person upon another for the purpose of inflicting severe or aggravated bodily injury. This type of assault usually is accompanied by the use of a weapon or by means likely to produce death or great bodily harm. Simple assaults are excluded.
+
+4) **Other assaults (simple)** : Assaults and attempted assaults where no weapon was used or no serious or aggravated injury resulted to the victim. Stalking, intimidation, coercion, and hazing are included. 
+
+**Property Crime Rate** : 
+
+Estimated rate of proeprty crimes reported to the FBI for a given state and year. Includes within it are counts of: 
+
+1. **Burglary**: This includes unlawful entry into a building or other structure with the intent to commit theft or any felony. Burglaries can be classified into different types, such as forcible entry, unlawful entry where no force is used, and attempted forcible entry.
+
+2. **Larceny-Theft**: This encompasses crimes such as shoplifting, pickpocketing, purse snatching, thefts from motor vehicles (including parts and accessories), bicycle thefts, thefts from buildings, and other forms of theft where there is no use of force, violence, or fraud. It excludes embezzlement, confidence games, forgery, check fraud, etc.
+
+3. **Motor Vehicle Theft**: This includes the theft or attempted theft of a motor vehicle, which encompasses all cases where automobiles are taken by persons not having lawful access, even if the vehicle is later abandoned.
+
+## Exploritory Data Analysis (EDA): 
+
+
+```{python}
+#| tags: [hide-input]
+import os, pandas as pd, numpy as np, linearmodels as lm, statsmodels.api as sm, statsmodels.formula.api as smf, seaborn as sns, matplotlib as mpl, matplotlib.pyplot as plt, warnings, geopandas as gpd, matplotlib.patches as mpatches
+from statsmodels.iolib.summary2 import summary_col
+import rpy2.robjects as robjects
+from rpy2.robjects import pandas2ri
+from rpy2.robjects.packages import importr
+from IPython.display import display, HTML
+from linearmodels.panel import PanelOLS
+
+# Activate automatic conversion between pandas dataframes and R dataframes
+pandas2ri.activate()
+
+warnings.filterwarnings('ignore')
+os.chdir('/Users/amadeusblackwell02/Library/CloudStorage/OneDrive-Personal/Tulane/Fall 2023/Adv. Poli/Project Data_')
+
+data = pd.read_csv("Term_15.csv")
+```
+
+|       | Population | Employment | Violent Crime Rate | Property Crime Rate | GDP        |
+|-------|------------|------------|--------------------|---------------------|------------|
+| count | 663        | 663        | 663                | 663                 | 663        |
+| mean  | 5595.85    | 2481.25    | 525.628            | 4384.16             | 156576     |
+| std   | 6063.95    | 2597.34    | 225.846            | 999.122             | 193749     |
+| min   | 453.401    | 183.1      | 51.3               | 2206.6              | 9744       |
+| 25%   | 1650.49    | 666.2      | 349.45             | 3738.4              | 37049      |
+| 50%   | 4048.51    | 1670.4     | 514.6              | 4245.2              | 95024      |
+| 75%   | 6341.34    | 3071.5     | 679.05             | 5052.6              | 188025     |
+| max   | 34871.8    | 14720      | 1180.9             | 7500.1              | 1.36778e+06 |
+
+## **Descriptive Statistics (Overall):**
+
+**Population:** The average state population in the dataset is approximately 5,628 individuals, with a median of 4,074, suggesting a right-skewed distribution. The standard deviation is significant at 6,104, indicating considerable variation in state populations. The distribution exhibits a pronounced right skew (skewness = 2.44) and a high kurtosis value of 6.98, reflecting a distribution with heavy tails and a sharp peak.
+
+**Employment:** Employment figures average at about 2,497, with a median of 1,675, which also indicates a right-skewed distribution. The standard deviation is 2,613, and like population, there is substantial variation across the dataset. The skewness is 2.18, and the kurtosis is 5.54, which means that the employment distribution also has a long right tail with a peak higher than a normal distribution.
+
+**Violent Crime Rate:** The average violent crime rate per 100,000 inhabitants is about 519.92, with a median rate of 509.90, suggesting a distribution that is slightly skewed to the right (skewness = 0.33). The standard deviation is 223.81, and the kurtosis is -0.22, indicating a distribution that is slightly flatter than a normal distribution.
+
+**Property Crime Rate:** This rate averages 4,341.59 per 100,000 inhabitants, with a median of 4,219.85, also slightly right-skewed (skewness = 0.37). The standard deviation is 1,005.37, and the kurtosis is 0.05, which suggests a distribution close to normal.
+
+**GDP:** The average GDP is significantly skewed with a mean of approximately 160,978 and a median of 95,585, indicating a highly right-skewed distribution (skewness = 2.96). The standard deviation is 199,877, and the kurtosis is extremely high at 11.20. suggesting that a few states have very high GDP values compared to the majority.
+
+## **Descriptive Statistics (High Crime States):**
+
+**Population:** The average population of "High Crime" states is approximately 9,169, with a median of 5,375, indicating a right-skewed distribution. The standard deviation is high at 8,870, showing significant variation in population sizes among these states. The skewness (1.38) and kurtosis (1.09) suggest a moderately peaked and right-skewed distribution.
+
+**Employment:** The average employment in "High Crime" states is around 3,983, with a median of 2,473. The standard deviation is 3,720, reflecting substantial variability in employment levels. The skewness (1.25) and kurtosis (0.70) indicate a distribution that is right-skewed and has a slightly higher peak than a normal distribution.
+
+**Violent Crime Rate:** The average violent crime rate is significantly higher in "High Crime" states at approximately 759.50 per 100,000 inhabitants, with a median of 757.90, suggesting a symmetric distribution. The standard deviation is 157.64, and the distribution has a slight right skew (skewness = 0.46) and is somewhat flatter than a normal distribution (kurtosis = -0.42).
+
+**Property Crime Rate:** "High Crime" states have an average property crime rate of approximately 4,709.75 per 100,000 inhabitants, with a median of 4,675.40. The standard deviation is 953.44, indicating variability in the property crime rates. The distribution is almost symmetric (skewness = 0.11) and has a kurtosis of 0.15, suggesting it is very close to normal.
+
+**GDP:** The GDP of "High Crime" states averages at 274,605 with a high standard deviation of 295,486, suggesting significant economic disparity among these states. The distribution is right-skewed (skewness = 1.79) and has a higher peak (kurtosis = 3.07) compared to a normal distribution, indicating a concentration of states with lower GDP values and a few outliers with very high GDPs.
+
+The data indicates that "High Crime" states are not homogenous; they exhibit considerable variation in population, employment levels, and economic output. The crime rates, while on average higher than the threshold for "High Crime" classification, do not present extreme variability in their distribution, suggesting that once a state is categorized as "High Crime," its crime rates tend to be elevated but within a certain range.
+
+#### Maps Of the United States (High Violent Crime)
+
+```{python}
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+
+# Extract unique states from the dataset
+unique_states_in_data = data['State'].unique()
+
+# Create a DataFrame for color coding
+color_map = pd.DataFrame({'State': unique_states_in_data})
+color_map = color_map.merge(data[['State', 'High Crime']], on='State', how='left').drop_duplicates()
+
+# Replace NaN with a specific value for black color
+color_map['High Crime'].fillna(-1, inplace=True)
+
+# Map the color coding using the specified colors
+color_map['color'] = color_map['High Crime'].map({0: '#FC0303',  # Dark red for 0
+                                                         1: '#17158A',  # Dark purple (indigo) for 1
+                                                         -1: 'brown'}) # Black for -1
+
+
+# Load state boundaries
+state_boundaries = gpd.read_file('https://www2.census.gov/geo/tiger/GENZ2021/shp/cb_2021_us_state_20m.zip')
+
+# Merge with color_map DataFrame
+state_boundaries = state_boundaries.merge(color_map, left_on='NAME', right_on='State', how='left')
+
+legend_labels = ['Low Crime (0)', 'High Crime (1)', 'Data Not Available (-1)']
+colors = ['#FC0303', '#17158A', 'brown']  # Colors corresponding to the values
+legend_handles = [Patch(facecolor=color, edgecolor='k', label=label) for color, label in zip(colors, legend_labels)]
+
+# Handle states not in the dataset by assigning them the default color (black)
+state_boundaries['color'].fillna('black', inplace=True)
+
+fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+state_boundaries.boundary.plot(ax=ax, linewidth=1)
+state_boundaries.plot(ax=ax, color=state_boundaries['color'], alpha=0.5)
+
+# Set x and y limits to zoom in
+ax.set_xlim(-125, -66)
+ax.set_ylim(24, 50)
+ax.legend(handles=legend_handles, loc='lower left', title='Crime Propensity')
+
+plt.title('US States By High Violent Crime Status')
+plt.show()
+```
+
+#### High property Crime: 
+
+```{python}
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+# Extract unique states from the dataset
+unique_states_in_data = data['State'].unique()
+
+# Create a DataFrame for color coding
+color_map = pd.DataFrame({'State': unique_states_in_data})
+color_map = color_map.merge(data[['State', 'High Crime Prop']], on='State', how='left').drop_duplicates()
+
+# Replace NaN with a specific value for black color
+color_map['High Crime Prop'].fillna(-1, inplace=True)
+
+# Map the color coding using the specified colors
+color_map['color'] = color_map['High Crime Prop'].map({0: 'darkred',  # Dark red for 0
+                                                         1: '#FF00FF',  # Dark purple (indigo) for 1
+                                                         -1: '#000000'}) # Black for -1
+
+
+# Load state boundaries
+state_boundaries = gpd.read_file('https://www2.census.gov/geo/tiger/GENZ2021/shp/cb_2021_us_state_20m.zip')
+
+# Merge with color_map DataFrame
+state_boundaries = state_boundaries.merge(color_map, left_on='NAME', right_on='State', how='left')
+
+legend_labels = ['Low Crime (0)', 'High Crime (1)', 'Data Not Available (-1)']
+colors = ['darkred', '#FF00FF', 'black']  # Colors corresponding to the values
+legend_handles = [Patch(facecolor=color, edgecolor='k', label=label) for color, label in zip(colors, legend_labels)]
+
+# Handle states not in the dataset by assigning them the default color (black)
+state_boundaries['color'].fillna('black', inplace=True)
+
+fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+state_boundaries.boundary.plot(ax=ax, linewidth=1)
+state_boundaries.plot(ax=ax, color=state_boundaries['color'], alpha=0.5)
+
+# Set x and y limits to zoom in
+ax.set_xlim(-125, -66)
+ax.set_ylim(24, 50)
+ax.legend(handles=legend_handles, loc='lower left', title='Crime Propensity')
+
+plt.title('US States By High Property Crime Status')
+plt.show()
+```
+
+## **Model(s),Results & Analysis:** 
+
+**The following models will be estimated in two parts:**
+- Model set 1: where the models are estimated without Fixed Effects nor Standard error clustering, in both Python and R for comparison.
+- Model set 2: Where the models are estimated inclduing Fixed Effects and Standard error clustering, in both R and Python for comparison.
+
+**Model-01: State-Level Violent Crime Rate**
+
+$$
+\text{Violent\_Crime}_i = \beta_0 + \beta_1 \text{employment}_i + \beta_2 \text{population}_i + \beta_3 \text{Post\_1994}_i + \beta_4 \text{High\_Crime}_i + \beta_5 \text{Post\_HC\_s}_i + \epsilon_i
+$$
+
+**Model-02: State-level Property Crime Rate**
+
+$$
+\text{Property\_Crime}_i = \omega_0 + \omega_1 \text{employment}_i + \omega_2 \text{population}_i + \omega_3 \text{Post\_1994}_i + \omega_4 \text{High\_Crime\_Prop}_i + \omega_5 \text{Post\_PC}_i + \eta_i
+$$
+
+```{python}
+# Model 01A: 
+# Filter the data for the specified years
+data = data[(data['year'] >= 1986) & (data['year'] <= 2002)]
+
+# Select dependent and independent variables with the updated "PostHC_static"
+Y = data['violent_crime_rate']
+X = data[['employment', 'population', 'Post_1994', 'High Crime', 'Post_HC']]
+
+# Add a constant for the intercept
+X = sm.add_constant(X)
+
+# Perform the OLS regression with updated variables
+model = sm.OLS(Y, X)
+results_VC = model.fit()
+
+# Model 01B: 
+
+
+# Select dependent and independent variables with the updated "PostHC_static"
+Y = data['property_crime_rate']
+X = data[['employment', 'population', 'Post_1994', 'High Crime Prop', 'Post_PC']]
+
+# Add a constant for the intercept
+X = sm.add_constant(X)
+
+# Perform the OLS regression with updated variables
+model = sm.OLS(Y, X)
+results_PC = model.fit()
+```
+
+#### **Model-01A:**
+
+```{python}
+from IPython.display import display, HTML
+
+# Convert the regression summaries to HTML and display them using IPython's display function
+display(HTML(results_VC.summary().as_html()))
+```
+
+```{python}
+# Load the R script with jtools for enhanced model summary
+r_script = """
+if (!requireNamespace("jtools", quietly = TRUE)) {
+    install.packages("jtools")
+}
+library(jtools)
+library(tidyverse)
+
+data <- read.csv("Term_15.csv") %>%
+        filter(year >= 1986, year <= 2002)
+
+Y <- data$violent_crime_rate
+X <- data[c('employment', 'population', 'Post_1994', 'High.Crime', 'Post_HC')]
+
+model <- lm(Y ~ ., data = cbind(Y, X))
+results_VC <- summ(model, confint = TRUE, digits = 5)
+results_VC
+"""
+
+# Run the R script
+robjects.r(r_script)
+
+# Retrieve and print results from R environment
+results_VC = robjects.r['results_VC']
+print(results_VC)
+```
+
+#### **Model-01B:** 
+
+```{python}
+display(HTML(results_PC.summary().as_html()))
+```
+
+```{python}
+# Load the R script with jtools for enhanced model summary
+r_script = """
+if (!requireNamespace("jtools", quietly = TRUE)) {
+    install.packages("jtools")
+}
+library(jtools)
+
+data <- read.csv("Term_15.csv") %>%
+        filter(year >= 1986, year <= 2002)
+
+Y <- data$property_crime_rate
+X <- data[c('employment', 'population', 'Post_1994', 'High.Crime.Prop', 'Post_PC')]
+
+model <- lm(Y ~ ., data = cbind(Y, X))
+results_PC <- summ(model, confint = TRUE, digits = 5)
+results_PC
+"""
+
+# Run the R script
+robjects.r(r_script)
+
+# Retrieve and print results from R environment
+results_PC = robjects.r['results_PC']
+print(results_PC)
+```
+
+#### **Model-01C: Comprehensive Step-Wise Model Progrssion For Violent & Property Crime Rate**
+
+```{python}
+import pandas as pd
+import statsmodels.api as sm
+from statsmodels.iolib.summary2 import summary_col
+
+# Load the data
+data = pd.read_csv("Term_15.csv")
+
+# Filter the data for the specified years (1986 to 2002)
+data_filtered = data[(data['year'] >= 1986) & (data['year'] <= 2002)]
+
+# Variables for the models
+variables_VC = ['employment', 'population', 'Post_1994', 'High Crime', 'Post_HC']
+variables_PC = ['employment', 'population', 'Post_1994', 'High Crime Prop', 'Post_PC']
+
+# Preparing data
+Y_VC = data_filtered['violent_crime_rate']
+X_VC = data_filtered[variables_VC]
+Y_PC = data_filtered['property_crime_rate']
+X_PC = data_filtered[variables_PC]
+
+# Manually creating and fitting each model for violent crime rate
+model_VC1 = sm.OLS(Y_VC, sm.add_constant(X_VC[['employment']])).fit()
+model_VC2 = sm.OLS(Y_VC, sm.add_constant(X_VC[['employment', 'population']])).fit()
+model_VC3 = sm.OLS(Y_VC, sm.add_constant(X_VC[['employment', 'population', 'Post_1994']])).fit()
+model_VC4 = sm.OLS(Y_VC, sm.add_constant(X_VC[['employment', 'population', 'Post_1994', 'High Crime']])).fit()
+model_VC5 = sm.OLS(Y_VC, sm.add_constant(X_VC[['employment', 'population', 'Post_1994', 'High Crime', 'Post_HC']])).fit()
+
+# Manually creating and fitting each model for property crime rate
+model_PC1 = sm.OLS(Y_PC, sm.add_constant(X_PC[['employment']])).fit()
+model_PC2 = sm.OLS(Y_PC, sm.add_constant(X_PC[['employment', 'population']])).fit()
+model_PC3 = sm.OLS(Y_PC, sm.add_constant(X_PC[['employment', 'population', 'Post_1994']])).fit()
+model_PC4 = sm.OLS(Y_PC, sm.add_constant(X_PC[['employment', 'population', 'Post_1994', 'High Crime Prop']])).fit()
+model_PC5 = sm.OLS(Y_PC, sm.add_constant(X_PC[['employment', 'population', 'Post_1994', 'High Crime Prop', 'Post_PC']])).fit()
+
+# Storing the results in lists
+results_VC = [model_VC1, model_VC2, model_VC3, model_VC4, model_VC5]
+results_PC = [model_PC1, model_PC2, model_PC3, model_PC4, model_PC5]
+
+# Using summary_col to present the results side by side
+combined_results_VC = summary_col(results_VC, stars=True, float_format='%0.2f',
+                                  model_names=['Model 1', 'Model 2', 'Model 3', 'Model 4', 'Model 5'],
+                                  info_dict={'R-squared': lambda x: f"{x.rsquared:.2f}",
+                                             'N': lambda x: f"{int(x.nobs)}"})
+
+combined_results_PC = summary_col(results_PC, stars=True, float_format='%0.2f',
+                                  model_names=['Model 1', 'Model 2', 'Model 3', 'Model 4', 'Model 5'],
+                                  info_dict={'R-squared': lambda x: f"{x.rsquared:.2f}",
+                                             'N': lambda x: f"{int(x.nobs)}"})
+
+# Print the results
+print("Violent Crime Rate Models:\n", combined_results_VC)
+print("\nProperty Crime Rate Models:\n", combined_results_PC)
+```
+
+## **Model Series 1: Violent Crime Result Analysis**
+
+**Employment:** In the final violent crime rate model we that the "employment" control is borderline significant at the 10% level with an estiamted effect of -0.05391 suggesting that, at the 10% level, for every additional person employed there is an associated drop of roughly 5% in the violent crime rate (per 100,000). Looking at the comprehensive results from figure 01C, we notice a material change in significance of the "employment" variable with inclusion of additional controls with the largest change occuring with the inclusion of the "Post_1994" variable, which remove all significance from the "employment" variable in the analysis. 
+
+Concerning the estimated effect magnititude, the range of the effect occulates between 4% and 10% which is relatively large, with the largest estimated effect (10%) occuring in the second model that includes a population control.
+
+**Population:** In the final model, population is significant at the 5% level and has an estimated effect of 0.03 or 3%. This suggests that for every per person increase in popuation, there is an associated increase the violent crime rate. Through out models 2-5, population retains it's significance with the high significance occuring in the second model - the first with population included - with it being significance at the 1% level. It's also in the second model where it has it's larghest estimated effect of .06 or 6%. 
+
+
+## **Analysis:** 
+### Model VC (Violent Crime Rate)
+
+#### Regression Results:
+
+1. **Constant (Intercept)**: The model's intercept is 445.8156 with a standard error of 11.194, highly significant (p < 0.001). This suggests that, holding all other variables at zero, the expected violent crime rate is 445.82 per 100,000 population. However, the interpretation of the intercept is more notional than practical, as the scenario of all other variables being zero is unrealistic.
+
+2. **Employment**: The coefficient is -0.0539 (p = 0.074), indicating a marginally significant negative relationship between employment and violent crime rate. For every one-unit increase in employment (presumably measured in thousands or some consistent unit), the violent crime rate decreases by approximately 0.054 per 100,000 population. This aligns with economic theories suggesting that higher employment can lead to reduced crime rates due to better social and economic opportunities.
+
+3. **Population**: The coefficient of 0.0302 (p = 0.019) implies a positive relationship between population size and violent crime rate. This coefficient is statistically significant, suggesting that larger populations are associated with higher rates of violent crime, potentially due to increased anonymity and opportunities for crime in more populous areas.
+
+4. **Post_1994**: The coefficient is -34.9076 (p = 0.024), indicating a statistically significant decrease in violent crime rate post-1994, which could be interpreted as the effect of the VCCA. This suggests that following the enactment of the VCCA, violent crime rates decreased by about 34.91 per 100,000 population, all else being equal.
+
+5. **High Crime**: With a coefficient of 354.9056 (p < 0.001), this variable shows a significant positive association with the violent crime rate. This could indicate areas previously designated as 'high crime' continue to experience elevated levels of violent crime.
+
+6. **Post_HC**: The coefficient is -119.6531 (p < 0.001), suggesting a significant reduction in violent crime rates in areas that were high crime before 1994 and after the enactment of VCCA. This might imply that VCCA had a particularly strong impact in previously high-crime areas.
+
+### Model PC (Property Crime Rate)
+
+#### Regression Results:
+
+1. **Constant (Intercept)**: The intercept is 4319.3923 with a standard error of 49.867, highly significant (p < 0.001). This implies a baseline property crime rate of 4319.39 per 100,000 population, under the hypothetical scenario where all other predictors are zero.
+
+2. **Employment**: The coefficient is -0.3646 (p = 0.005), suggesting a significant negative relationship between employment and property crime rate. This supports the theory that higher employment levels can reduce property crime, possibly due to improved economic conditions.
+
+3. **Population**: The positive coefficient of 0.1313 (p = 0.017) indicates a significant relationship between larger population sizes and higher property crime rates, consistent with the theory of increased criminal opportunities in more populous areas.
+
+4. **Post_1994**: The coefficient is -446.3962 (p < 0.001), showing a substantial decrease in property crime rate post-1994. This robust result could be interpreted as the impact of the VCCA on property crimes, suggesting a significant policy effectiveness.
+
+5. **High Crime Prop**: The coefficient of 1552.2267 (p < 0.001) indicates a strong positive association with property crime rate in areas designated as high crime for property offenses. This is consistent with the notion that areas with historically high property crime rates continue to experience elevated levels.
+
+6. **Post_PC**: The coefficient of -464.8241 (p < 0.001) suggests a significant reduction in property crime rates in specific areas post-VCCA, possibly indicating the effectiveness of the policy in targeted locations.
+
+### Overall Interpretation:
+
+Both models show that the VCCA's enactment is associated with significant decreases in both violent and property crime rates, as evidenced by the negative coefficients of the Post_1994 variable in both models. This is a key finding, suggesting that the policy had a tangible impact on crime rates across the board. The interaction terms (Post_HC_s in the violent crime model and Post_PC in the property crime model) further indicate that these effects were particularly pronounced in areas that were already struggling with high crime rates, highlighting the targeted effectiveness of the policy.
+
+The relationships between crime rates and population, as well as employment, align with conventional criminological and economic theories. Larger populations are correlated with higher crime rates, likely due to increased opportunities and anonymity for criminals. Conversely, higher employment is associated with lower crime rates, supporting the theory that improved economic conditions can reduce criminal incentives.
+
+It's important to note that while these results are statistically significant and align with theoretical expectations, they are subject to the usual caveats of regression analysis, including potential omitted variable bias and the assumption of a linear relationship between the predictors and the dependent variable.
+
+## **Model-02A: PanelOLS with State and Year Fixed Effects with State-Time Standard Error Clustering** 
+
+```{python}
+# Assuming 'data' is a predefined DataFrame
+data_lm = data
+
+# Set 'State' and 'year' as index to create a multi-index DataFrame
+data_lm = data_lm.set_index(['State', 'year'])
+
+# Select dependent and independent variables
+dependent = data_lm['violent_crime_rate']
+independent = data_lm[['employment', 'population', 'Post_HC']]
+
+# Create the model with entity effects (state fixed effects) and time effects (year fixed effects)
+model = PanelOLS(dependent, independent, entity_effects=True, time_effects=True)
+
+# Fit the model with clustered standard errors by state and drop absorbed variables
+results1 = model.fit(cov_type='clustered', cluster_entity=True, cluster_time=True)
+
+# Display the results in HTML format
+display(HTML(results1.summary.as_html()))
+```
+
+#### **Model-02A-Part B: PanelOLS with State and Year Fixed Effects with State-Time Standard Error Clustering Using PLM Package in R** 
+
+```{python}
+# Import R's utility package
+utils = importr('utils')
+
+# Import the R packages
+plm = importr('plm')
+lmtest = importr('lmtest')
+tidyverse = importr('tidyverse')
+
+# Define the R script as a string
+r_script = """
+library(plm)
+library(lmtest)
+library(tidyverse)
+
+# Read the data
+data <- read.csv("Term_15.csv") %>%
+        filter(year >= 1986, year <= 2002)
+
+# Convert the data frame to a pdata.frame for panel data analysis
+pdata <- pdata.frame(data, index = c("State", "year"))
+
+# Fit the model with fixed effects
+model <- plm(violent_crime_rate ~ Post_HC + employment + population, data = pdata, model = "within", effect = "twoways")
+
+# Compute clustered standard errors
+coefs <- coef(summary(model, vcovHC(model, type = "HC1", cluster = "group")))
+
+# Print the results
+print(summary(model))
+print(coefs)
+"""
+
+# Run the R script
+robjects.r(r_script)
+```
+
+#### **Model-02B: Property Crime Rate with Fixed Effects and Clustered Standard Errors**
+
+```{python}
+data_lm = data
+
+# Assuming 'data' is a DataFrame with 'violent_crime_rate', 'employment', 'population',
+# 'Post_1994', 'High Crime', and 'Post_hc' columns, as well as 'year' and 'State'.
+
+# Set 'State' and 'year' as index to create a multi-index DataFrame
+data_lm = data_lm.set_index(['State', 'year'])
+
+# Select dependent and independent variables
+dependent = data_lm['property_crime_rate']
+independent = data_lm[['employment', 'population', 'Post_PC']]
+
+# Since linearmodels automatically adds a constant, we do not need to add it manually as with statsmodels
+
+# Create the model with entity effects (state fixed effects) and time effects (year fixed effects)
+model = PanelOLS(dependent, independent, entity_effects=True, time_effects=True)
+
+# Fit the model with clustered standard errors by state
+# Fit the model with clustered standard errors by state and drop absorbed variables
+results2 = model.fit(cov_type='clustered', cluster_entity=True, cluster_time=True)
+
+
+# Output the results
+display(HTML(results2.summary.as_html()))
+```
+
+## **Model-02B_PartB: Property Crime Rate with Fixed Effects and Clustered Standard Errors Using PLM in R**
+
+```{python}
+# Import R's utility package
+utils = importr('utils')
+
+# Import the R packages
+plm = importr('plm')
+lmtest = importr('lmtest')
+tidyverse = importr('tidyverse')
+
+# Define the R script as a string
+r_script = """
+library(plm)
+library(lmtest)
+library(tidyverse)
+
+# Read the data
+data <- read.csv("Term_15.csv") %>%
+        filter(year >= 1986, year <= 2002)
+
+# Convert the data frame to a pdata.frame for panel data analysis
+pdata <- pdata.frame(data, index = c("State", "year"))
+
+# Fit the model with fixed effects
+model <- plm(property_crime_rate ~ Post_PC + employment + population, data = pdata, model = "within", effect = "twoways")
+
+# Compute clustered standard errors
+coefs <- coef(summary(model, vcovHC(model, type = "HC1", cluster = "group")))
+
+# Print the results
+print(summary(model))
+print(coefs)
+"""
+
+# Run the R script
+robjects.r(r_script)
+```
+
+## **Discussion:**
+
+### Model 1: Violent Crime Rate
+
+#### Regression Results:
+
+1. **Employment**: The coefficient is -0.0142, with a standard error of 0.0633 and a t-statistic of -0.2245, yielding a p-value of 0.8225. This indicates that there is no statistically significant relationship between employment and violent crime rate in this model. The implication is that within the scope of this model, employment changes are not strong predictors of variations in violent crime rates.
+
+2. **Population**: The coefficient is -0.0336 with a standard error of 0.0295. The t-statistic is -1.1408, resulting in a p-value of 0.2544. Again, this variable does not show statistical significance at conventional levels, suggesting that within the confines of this model, population changes do not significantly influence violent crime rates.
+
+3. **Post_HC_s**: The coefficient of -105.03 with a standard error of 52.303 and a t-statistic of -2.0081 is statistically significant at the 5% level (p-value = 0.0451). This suggests a significant decrease in violent crime rates in the post-intervention period in areas with historically high crime rates. This finding is crucial as it implies a tangible impact of the interventions targeting high crime areas.
+
+#### Model Diagnostics:
+
+- **R-squared (Within)**: At 0.2204, it indicates that about 22.04% of the variation in violent crime rates is explained by the model within entities (i.e., controlling for entity-specific characteristics).
+- **F-statistic**: Highly significant (p-value < 0.0001), indicating the model's explanatory variables have a collective significance.
+- **Poolability Test**: The F-test for poolability is significant, suggesting that entity and time effects are important in this model.
+
+### Model 2: Property Crime Rate
+
+#### Regression Results:
+
+1. **Employment**: The coefficient is 0.0967, with a standard error of 0.3117, resulting in a t-statistic of 0.3102 and a p-value of 0.7566. This implies no statistically significant relationship between employment and property crime rate.
+
+2. **Population**: The coefficient of -0.3466 is significant at the 5% level (p-value = 0.0423) with a t-statistic of -2.0349. This suggests that population changes have a statistically significant impact on property crime rates, with larger populations associated with lower property crime rates in this context.
+
+3. **Post_PC**: The coefficient is -305.56, with a standard error of 188.10 and a t-statistic of -1.6244. The p-value of 0.1048 indicates that this variable is not significant at the conventional 5% level. This suggests that the post-intervention effect on property crime rates is not statistically significant within the scope of this model.
+
+#### Model Diagnostics:
+
+- **R-squared (Within)**: At 0.3407, around 34.07% of the variation in property crime rates is explained by the model within entities.
+- **F-statistic**: Highly significant (p-value < 0.0001), indicating the collective significance of the variables.
+- **Poolability Test**: The significant F-test for poolability highlights the importance of entity and time effects.
+
+### Comparative Analysis and Implications:
+
+- **Effectiveness of Interventions**: Model 1 shows a significant reduction in violent crime rates in high-crime areas post-intervention, while Model 2 does not find a significant impact on property crime rates. This discrepancy could be due to differences in the nature of violent versus property crimes or the effectiveness of interventions in these domains.
+- **Role of Employment and Population**: Neither model finds a significant relationship between employment and crime rates. However, population changes are significantly related to property crime rates in Model 2, suggesting a possible differential impact on different types of crimes.
+- **Model Robustness**: The significant poolability tests in both models underscore the importance of considering both entity (e.g., geographic) and time effects in analyzing crime rate changes.
+
+These findings contribute to the broader discourse on the effectiveness of crime interventions and the dynamics of crime rate determinants. The significant impact in high-crime areas for violent crimes (Model 1) suggests that targeted policies may be effective in these contexts. However, the lack of significance in property crime reduction (Model 2) calls for a reevaluation of strategies or further investigation into different or additional determinants that might influence property crime rates.
+
+## **Event Study:** 
+
+```{python}
+data = pd.read_csv("Term_15.csv")
+
+# Define the pre-treatment year for the event study
+pre_treatment_year = 1994
+
+# Create the interaction terms for each year relative to the treatment, omitting 1993
+for year in range(1986, 2003):
+    if year != 1993:
+        data[f'Post_{year}'] = ((data['year'] >= year) & (data['High Crime'] == 1)).astype(int)
+
+# Filter the data for the specified years
+filtered_data = data[(data['year'] >= 1986) & (data['year'] <= 2002)]
+
+# Select dependent and independent variables, excluding 1993 interaction term
+Y = filtered_data['violent_crime_rate']
+X = filtered_data[['employment', 'population'] + [f'Post_{year}' for year in range(1986, 2003) if year != 1993]]
+X = sm.add_constant(X)  # Add a constant for the intercept
+
+# Perform the OLS regression
+model = sm.OLS(Y, X)
+results_fe = model.fit()
+
+# Extracting the coefficients and standard errors for the post-year interaction terms
+post_year_coeffs = results_fe.params[3:]
+post_year_se = results_fe.bse[3:]
+
+# Years for the interaction terms, excluding 1993
+years = [year for year in range(1986, 2003) if year != 1993]
+
+# Plotting
+plt.figure(figsize=(12, 6))
+plt.errorbar(years, post_year_coeffs, yerr=1.96*post_year_se, fmt='o', color='blue', ecolor='lightblue', elinewidth=3, capsize=0)
+plt.axhline(y=0, color='grey', linestyle='--')
+
+# Labels and title
+plt.title("Event Study Plot: Impact of High Crime Status on Violent Crime Rate")
+plt.xlabel("Year")
+plt.ylabel("Coefficient (Impact on Violent Crime Rate)")
+plt.xticks(years, rotation=45)
+
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+data = pd.read_csv("Term_15.csv")
+
+# Define the pre-treatment year for the event study
+pre_treatment_year = 1994
+
+# Create the interaction terms for each year relative to the treatment, omitting 1993
+for year in range(1986, 2003):
+    if year != 1993:
+        data[f'Post_{year}'] = ((data['year'] >= year) & (data['High Crime Prop'] == 1)).astype(int)
+
+# Filter the data for the specified years
+filtered_data = data[(data['year'] >= 1986) & (data['year'] <= 2002)]
+
+# Select dependent and independent variables, excluding 1993 interaction term
+Y = filtered_data['property_crime_rate']
+X = filtered_data[['employment', 'population'] + [f'Post_{year}' for year in range(1986, 2003) if year != 1993]]
+X = sm.add_constant(X)  # Add a constant for the intercept
+
+# Perform the OLS regression
+model = sm.OLS(Y, X)
+results_fe = model.fit()
+
+# Extracting the coefficients and standard errors for the post-year interaction terms
+post_year_coeffs = results_fe.params[3:]
+post_year_se = results_fe.bse[3:]
+
+# Years for the interaction terms, excluding 1993
+years = [year for year in range(1986, 2003) if year != 1993]
+
+# Plotting
+plt.figure(figsize=(12, 6))
+plt.errorbar(years, post_year_coeffs, yerr=1.96*post_year_se, fmt='o', color='blue', ecolor='lightblue', elinewidth=3, capsize=0)
+plt.axhline(y=0, color='grey', linestyle='--')
+
+# Labels and title
+plt.title("Event Study Plot: Impact of High Crime Status on Property Crime Rate")
+plt.xlabel("Year")
+plt.ylabel("Coefficient (Impact on Violent Crime Rate)")
+plt.xticks(years, rotation=45)
+
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+from rpy2.robjects import r
+import IPython.display as display
+
+# Define the R script as a string
+r_script = """
+library(fixest)
+library(dplyr)
+
+# Read the data
+data <- read.csv("Term_15.csv") %>%
+        filter(year >= 1986, year <= 2002)
+
+# Fit the fixed effects model
+ef <- feols(violent_crime_rate ~ i(year, `High.Crime`, 1993) + employment + population | State + year,
+            cluster = ~ State + year,
+            data = data)
+
+# Save the plot to a file
+png('event_study_plot.png')
+iplot(ef)
+dev.off()
+"""
+
+# Run the R script
+r(r_script)
+
+# Display the saved plot in Python
+display.Image(filename='event_study_plot.png')
+```
+
+```{python}
+# Define the R script as a string
+r_script = """
+library(fixest)
+library(dplyr)
+
+# Read the data
+data <- read.csv("Term_15.csv") %>%
+        filter(year >= 1986, year <= 2002)
+
+# Fit the fixed effects model
+ef <- feols(property_crime_rate ~ i(year, `High.Crime.Prop`, 1993) + employment + population | State + year,
+            cluster = ~ State + year,
+            data = data)
+
+# Save the plot to a file
+png('event_study_plot.png')
+iplot(ef)
+dev.off()
+"""
+
+# Run the R script
+r(r_script)
+
+# Display the saved plot in Python
+display.Image(filename='event_study_plot.png')
+```
+
+## **Robustness Check(s):**
+
+#### **Check #01: Synthetic Controls** 
+
+Synthetic Control Models (SCM) were first proposed and estimated by economists Alberto Abadie and Javier Gardeazabal in their [2003 paper](https://economics.mit.edu/sites/default/files/publications/The%20Economic%20Costs%20of%20Conflict.pdf), where they investigated the economic effects of conflict, specifically focusing on the terrorist conflict in the Basque Country. SCM works by creating a 'Synthetic' replica of a treated unit that received some intervention at time t. This approach is particularly useful when other, more suitable candidates for comparison might not exist or are unavailable. SCM accomplishes this by generating a set of non-negative weights that sum to 1, derived from a pool of untreated candidates. These candidates are selected for their similarity in characteristics to the treated unit of interest prior to the intervention. This methodology allows for a more accurate assessment of the intervention's impact by comparing the post-intervention outcomes of the treated unit with those of the synthetic control.
+
+#### **Againsts a Difference-in-Difference Model**
+
+The Synthetic Control Model (SCM) is employed as a robustness check for the Difference-in-Differences (DiD) analysis to enhance the credibility and reliability of our findings. SCM is particularly adept at constructing a counterfactual scenario in cases where parallel trends assumptions, crucial for DiD validity, might be questionable. By using a weighted combination of untreated units to create a synthetic control group, SCM provides a more nuanced and context-specific comparison, addressing potential limitations in the DiD model such as the presence of idiosyncratic trends that are not common to all units. This complementary approach helps to reinforce the validity of our causal inferences, ensuring that the observed effects are not artifacts of model specification but robust to alternative analytical frameworks.
+
+#### **Application**
+
+Below, you'll find three Synthetic Contron Model estimations. The first is a model that makes use of [Non-Negative Least Squares](https://scipy.github.io/devdocs/reference/generated/scipy.optimize.nnls.html) to generate the weights needed to construct a Synthetic replica of California. The following two interations make use of an optimization model [Nelder-Mead](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-neldermead.html) optimization that incorporates a Non-Negative Least Squares framework, augmented by the introduction of a diagonal matrix `V`. The elements of `V` function as weights, indicating the relative significance of various variables within the model. This matrix is crucial for fine-tuning the model's outputs, ensuring that the weights are applied in a manner that sensitively and accurately reflects the underlying data characteristics. The optimized weights, represented by `W*(V)`, are derived in such a way that they best reproduce specific target values, as encapsulated by a predefined vector of key indicators. This methodological approach allows for a nuanced and precise application of the model to a given dataset, leading to more customized and context-specific results.
+
+#### **Manual Synthetic Controls Estimation Using Non-Negative Least Squares (NNLS)**
+
+```{python}
+from scipy.optimize import nnls
+
+# Load the data
+data = pd.read_csv('Term_15.csv')
+
+# Define the pre-treatment and post-treatment periods
+pre_treatment_years = data['year'] < 1994
+post_treatment_years = data['year'] >= 1994
+
+# Filter the data for the donor pool excluding California
+donor_pool_pre_treatment = data[(data['State'] != 'California') & pre_treatment_years]
+donor_pool_post_treatment = data[(data['State'] != 'California') & post_treatment_years]
+
+# Pivot the data to get violent crime rates per year for each state
+predictors_pre = donor_pool_pre_treatment.pivot(index='year', columns='State', values='violent_crime_rate')
+predictors_post = donor_pool_post_treatment.pivot(index='year', columns='State', values='violent_crime_rate')
+
+# Get the actual violent crime rate for California
+california_actual_pre = data[(data['State'] == 'California') & pre_treatment_years]['violent_crime_rate']
+california_actual_post = data[(data['State'] == 'California') & post_treatment_years]['violent_crime_rate']
+
+# Estimate NNLS weights based on pre-treatment period
+nnls_weights, _ = nnls(predictors_pre, california_actual_pre)
+
+# Create synthetic control for pre- and post-treatment periods
+synthetic_control_pre = predictors_pre.dot(nnls_weights)
+synthetic_control_post = predictors_post.dot(nnls_weights)
+
+# Create a DataFrame for actual and synthetic values for easier plotting
+california_actual = data[data['State'] == 'California'].set_index('year')['violent_crime_rate']
+synthetic_control = pd.concat([synthetic_control_pre, synthetic_control_post])
+
+# Prepare the DataFrame for plotting
+actual_vs_synthetic = pd.DataFrame({
+    'Actual': california_actual,
+    'Synthetic': synthetic_control
+}).reset_index()
+
+plt.figure(figsize=(14, 7))
+plt.plot(actual_vs_synthetic['year'], actual_vs_synthetic['Actual'], label='Actual', marker='o')
+plt.plot(actual_vs_synthetic['year'], actual_vs_synthetic['Synthetic'], label='Synthetic', linestyle='--', marker='x')
+plt.axvline(x=1994, color='red', linestyle='--', label='Treatment Year: 1994')
+plt.title('Actual vs Synthetic Control for Violent Crime Rate in California (1986-2002)')
+plt.xlabel('Year')
+plt.ylabel('Violent Crime Rate')
+plt.xticks(actual_vs_synthetic['year'])  # Set x-axis ticks to be the years
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+
+```{python}
+# Load the data
+data = pd.read_csv('Term_14.csv')
+
+# Define the pre-treatment and post-treatment periods
+pre_treatment_years = data['year'] < 1994
+post_treatment_years = data['year'] >= 1994
+
+# Filter the data for the donor pool excluding California
+donor_pool_pre_treatment = data[(data['State'] != 'California') & pre_treatment_years]
+donor_pool_post_treatment = data[(data['State'] != 'California') & post_treatment_years]
+
+# Pivot the data to get Property Crime Rates per year for each state
+predictors_pre = donor_pool_pre_treatment.pivot(index='year', columns='State', values='property_crime_rate')
+predictors_post = donor_pool_post_treatment.pivot(index='year', columns='State', values='property_crime_rate')
+
+# Get the actual Property Crime Rate for California
+california_actual_pre = data[(data['State'] == 'California') & pre_treatment_years]['property_crime_rate']
+california_actual_post = data[(data['State'] == 'California') & post_treatment_years]['property_crime_rate']
+
+# Estimate NNLS weights based on pre-treatment period
+nnls_weights, _ = nnls(predictors_pre, california_actual_pre)
+
+# Create synthetic control for pre- and post-treatment periods
+synthetic_control_pre = predictors_pre.dot(nnls_weights)
+synthetic_control_post = predictors_post.dot(nnls_weights)
+
+# Create a DataFrame for actual and synthetic values for easier plotting
+california_actual = data[data['State'] == 'California'].set_index('year')['property_crime_rate']
+synthetic_control = pd.concat([synthetic_control_pre, synthetic_control_post])
+
+# Prepare the DataFrame for plotting
+actual_vs_synthetic = pd.DataFrame({
+    'Actual': california_actual,
+    'Synthetic': synthetic_control
+}).reset_index()
+
+plt.figure(figsize=(14, 7))
+plt.plot(actual_vs_synthetic['year'], actual_vs_synthetic['Actual'], label='Actual', marker='o')
+plt.plot(actual_vs_synthetic['year'], actual_vs_synthetic['Synthetic'], label='Synthetic', linestyle='--', marker='x')
+plt.axvline(x=1994, color='red', linestyle='--', label='Treatment Year: 1994')
+plt.title('Actual vs Synthetic Control for Property Crime Rate in California (1986-2002)')
+plt.xlabel('Year')
+plt.ylabel('Property Crime Rate')
+plt.xticks(actual_vs_synthetic['year'])  # Set x-axis ticks to be the years
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+
+## **Results:** 
+
+The two figures above depict synthetic California's property and violent crime rates from 1986 to 2002, juxtaposed with the actual crime rates of California during the same timeframe. In both models, synthetic California's crime rates closely track the actual data, lending credibility to the NNLS estimation technique. Following the 1994 enactment of the VCCA, a significant gap emerges between the actual and synthetic data, indicating that, shortly after 1994, there is a discernible difference between the synthetic, untreated California and its actual crime rates, providing a strong visual representation of the effects of the 1994 crime bill.
+
+#### **Quirks**
+
+In both graphs, there is a noticeable divergence between the synthetic and actual data pre-1994, specifically in 1993. At this stage, the cause of this divergence is analytically unknown, but my educated guess would suggest there's an anticipatory effect taking hold in California in 1993, spurring this divergence. To fully flsuh out this anomaly, a more careful investigation will need to take place to determine the source and full implications of this sudden and unexpected divergence.
+
+## **Implementation of Synthetic Controls Using Pysyncon Package & 2003 Optimization**
+
+```{python}
+import pandas as pd
+from pysyncon import Dataprep, Synth
+
+# Load the data
+data = pd.read_csv('Term_15.csv')
+
+# Initialize the Dataprep object with necessary parameters
+dataprep = Dataprep(
+    foo=data,
+    predictors=["violent_crime_rate", "GDP", "population", "employment"],
+    predictors_op="mean",
+    dependent="violent_crime_rate",
+    unit_variable="State",
+    time_variable="year",
+    treatment_identifier="California",
+    controls_identifier=data[data['State'] != 'California']['State'].unique().tolist(),
+    time_predictors_prior=range(data['year'].min(), 2002),
+    time_optimize_ssr=range(data['year'].min(), 2002)
+)
+
+# Create and fit the Synth model
+synth = Synth()
+synth.fit(dataprep=dataprep, optim_method="Nelder-Mead", optim_initial="equal")
+
+# Analyze the results
+# You can use synth.weights(), synth.plot(), and other methods for analysis
+```
+
+```{python}
+synth.summary()
+```
+
+```{python}
+# Load the data
+data = pd.read_csv('Term_15.csv')
+
+# Initialize the Dataprep object with necessary parameters
+dataprep = Dataprep(
+    foo=data,
+    predictors=["property_crime_rate", "GDP", 'population', 'employment',],
+    predictors_op="mean",
+    dependent="property_crime_rate",
+    unit_variable="State",
+    time_variable="year",
+    treatment_identifier="California",
+    controls_identifier=data[data['State'] != 'California']['State'].unique().tolist(),
+    time_predictors_prior=range(data['year'].min(), 2002),
+    time_optimize_ssr=range(data['year'].min(), 2002)
+)
+
+# Create and fit the Synth model
+synth_pc = Synth()
+synth_pc.fit(dataprep=dataprep, optim_method="Nelder-Mead", optim_initial="equal")
+
+# Analyze the results
+# You can use synth.weights(), synth.plot(), and other methods for analysis
+```
+
+```{python}
+synth.path_plot(treatment_time=1994)
+```
+
+#### **Weights, Actual Vs Synthetic**
+
+```{python}
+synth_pc.path_plot(treatment_time=1994)
+```
+
+## **Results:**
+
+The two graphs above, generated using the synthetic control method as outlined by Abadie and colleagues, suggest that the underlying features used to create the weights for estimating a valid synthetic control are inadequate. Consequently, this inadequacy hampers the creation of a valid synthetic counterpart for California. Both graphs demonstrate that post-1994, the actual violent and property crime rates in California exceeded those of the synthetic California. This discrepancy might be attributed to the well-documented issue of [Reverse Causality](https://academic.oup.com/aler/article-abstract/21/1/81/5210860?redirectedFrom=fulltext). Typically, studies in this field estimate an IV 2SLS model to disentangle these effects.
+
+#### **Abadie et al. vs. NNLS:**
+
+Regarding the Synthetic Controls Models estimated above: While the Non-Negative Least Squares (NNLS) method produced results more aligned with the previously estimated Difference-in-Difference models, the implementation following the exact formula by Abadie et al. carries more credibility due to its strong foundation in the literature.
+
+Currently, the findings indicate that the estimates derived from the Difference-in-Difference models mentioned earlier lack robustness.
+
+#### **Check-02:** Difference-in-Difference Estimation Using 1988-2000 Time Frame
+
+#### Model-02A Re-estimated Using Reduced Time Frame
+
+```{python}
+from IPython.display import display, HTML
+
+data = pd.read_csv('Term_15.csv')
+
+data_filtered = data[(data['year'] >= 1988) & (data['year'] <= 2000)]
+
+# Set 'State' and 'year' as index to create a multi-index DataFrame
+data_lm = data_filtered.set_index(['State', 'year'])
+
+# Select dependent and independent variables
+dependent = data_lm['violent_crime_rate']
+independent = data_lm[['employment', 'population', 'Post_HC']]
+
+# Create the model with entity effects (state fixed effects) and time effects (year fixed effects)
+model = PanelOLS(dependent, independent, entity_effects=True, time_effects=True)
+
+# Fit the model with clustered standard errors by state
+# Fit the model with clustered standard errors by state and drop absorbed variables
+results1_r = model.fit(cov_type='clustered', cluster_entity=True, cluster_time=True)
+
+
+# Output the results
+display(HTML(results1_r.summary.as_html()))
+```
+
+#### Model-02B Re-estimated Using Reduced Time Frame
+
+```{python}
+from IPython.display import display, HTML
+
+data = pd.read_csv('Term_15.csv')
+
+data_filtered = data[(data['year'] >= 1988) & (data['year'] <= 2000)]
+
+# Assuming 'data' is a DataFrame with 'violent_crime_rate', 'employment', 'population',
+# 'Post_1994', 'High Crime', and 'Post_hc' columns, as well as 'year' and 'State'.
+
+# Set 'State' and 'year' as index to create a multi-index DataFrame
+data_lm = data_filtered.set_index(['State', 'year'])
+
+# Select dependent and independent variables
+dependent = data_lm['property_crime_rate']
+independent = data_lm[['employment', 'population', 'Post_PC']]
+
+# Since linearmodels automatically adds a constant, we do not need to add it manually as with statsmodels
+
+# Create the model with entity effects (state fixed effects) and time effects (year fixed effects)
+model = PanelOLS(dependent, independent, entity_effects=True, time_effects=True)
+
+# Fit the model with clustered standard errors by state
+# Fit the model with clustered standard errors by state and drop absorbed variables
+results2_r = model.fit(cov_type='clustered', cluster_entity=True, cluster_time=True)
+
+
+# Output the results
+display(HTML(results2_r.summary.as_html()))
+```
+
+#### **Result(s)**
+
+
+**Model-02A:** when re-estimated over a shorter time frame (1988-2000, instead of 1986-2002), displays consistent significance for the key variable "PostHC_static." However, there is a noticeable decrease in the estimated magnitude of its effect, dropping from -114.69 to -99.207. In context, this change suggests that shortening the time range by four periods reduces the estimated impact of being a high-crime state post the 1994 implementation of the VCCA by approximately 15.48 violent crimes per 100,000.
+
